@@ -30,6 +30,15 @@ SELECT *,
 where cst_id is not null)a where rnk=1--getting the current value of customer id(recent records of the customer)
 
 --second table product information
+INSERT INTO silver.crm_prd_info(
+	   [prd_id]
+      ,[category_id]
+      ,[prd_key]
+      ,[prd_nm]
+      ,[prd_cost]
+      ,[prd_line]
+      ,[prd_start_dt]
+      ,[prd_end_dt])
 select 
 prd_id,
 REPLACE(SUBSTRING(prd_key,1,5),'-','_') as customer_key,
