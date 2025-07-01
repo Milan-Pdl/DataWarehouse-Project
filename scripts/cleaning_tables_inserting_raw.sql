@@ -55,3 +55,45 @@ END AS prd_line,-- Refedining the abbrevration
 CAST(prd_start_dt as DATE) AS prd_start_dt,--we are data casting for proper date
 LEAD(prd_start_dt) OVER(PARTITION BY prd_key order by prd_start_dt)-1 AS prd_end_dt-- doing a dataenrichment
 from bronze.crm_prd_info
+
+--third table messed up for god sake
+INSERT INTO silver.crm_sales_details(
+sls_ord_num,
+sls_prd_key,
+sls_cust_id,
+sls_order_dt,
+sls_ship_dt,
+sls_due_dt,
+sls_sales,
+sls_quantity,
+sls_price
+)
+
+select
+sls_ord_num,
+sls_prd_key,
+sls_cust_id,
+CASE
+	WHEN sls_order_dt=0 or LEN(sls_order_dt)!=8 then NULL
+	ELSE CAST(CAST(sls_order_dt AS VARCHAR) AS DATE)
+END AS sls_order_dt,
+CASE
+	WHEN sls_ship_dt=0 or LEN(sls_ship_dt)!=8 then NULL
+	ELSE CAST(CAST(sls_ship_dt AS VARCHAR) AS DATE)
+END AS sls_ship_dt,
+CASE
+	WHEN sls_due_dt=0 or LEN(sls_due_dt)!=8 then NULL
+	ELSE CAST(CAST(sls_due_dt AS VARCHAR) AS DATE)
+END AS sls_due_dt,
+sls_sales,
+CASE
+	WHEN sls_sales<0 OR sls_sales IS NULL or sls_sales!=sls_quantity*sls_price THEN (sls_quantity*ABS(sls_price))
+	ELSE sls_sales
+END AS sls_sales,	
+sls_quantity,
+CASE	
+	WHEN sls_price is NULL OR sls_price<=0 THEN NULLIF(sls_sales/sls_quantity,0)
+	ELSE sls_price
+END AS sls_price
+from bronze.crm_sales_details
+ 
