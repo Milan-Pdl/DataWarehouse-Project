@@ -41,17 +41,17 @@ INSERT INTO silver.crm_prd_info(
       ,[prd_end_dt])
 select 
 prd_id,
-REPLACE(SUBSTRING(prd_key,1,5),'-','_') as customer_key,
+REPLACE(SUBSTRING(prd_key,1,5),'-','_') as customer_key,--
 SUBSTRING(prd_key,7,len(prd_key)) as prd_key,
 TRIM(prd_nm) as prd_nm,
-isnull(prd_cost,0) as prd_cost,
+isnull(prd_cost,0) as prd_cost,-- Handeling the missing information
 CASE UPPER(TRIM(prd_line))
 	WHEN 'M'THEN 'Mountains'
 	WHEN 'R' THEN 'Roads'
 	WHEN 'S' THEN 'Other Sales'
 	WHEN 'T' THEN 'Touring'
 	ELSE 'n/a'
-END AS prd_line,
-CAST(prd_start_dt as DATE) AS prd_start_dt,
-LEAD(prd_start_dt) OVER(PARTITION BY prd_key order by prd_start_dt)-1 AS prd_end_dt
+END AS prd_line,-- Refedining the abbrevration
+CAST(prd_start_dt as DATE) AS prd_start_dt,--we are data casting for proper date
+LEAD(prd_start_dt) OVER(PARTITION BY prd_key order by prd_start_dt)-1 AS prd_end_dt-- doing a dataenrichment
 from bronze.crm_prd_info
