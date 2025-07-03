@@ -96,4 +96,43 @@ CASE
 	ELSE sls_price
 END AS sls_price
 from bronze.crm_sales_details
+--fourth table
+INSERT INTO silver.erp_cust_az12(
+	cid,
+	bdate,
+	gen
+)
+SELECT
+CASE WHEN cid LIKE 'NAS%' THEN SUBSTRING(cid,4,LEN(cid))
+	 ELSE cid 
+END AS cid,
+CASE WHEN bdate>GETDATE() THEN NULL
+	 ELSE bdate 
+END AS bdate,
+CASE WHEN UPPER(TRIM(gen)) IN ('F','FEMALE') THEN 'Female'
+	 WHEN UPPER(TRIM(gen)) IN ('M','MALE') THEN 'Male'
+	 ELSE 'n\a'
+END AS gen 
+from bronze.erp_cust_az12;
+
+--cleaning fifth one
+INSERT INTO silver.erp_loc_a101(cid,cntry)
+select
+case when cid like '__-%' THEN CONCAT(SUBSTRING(cid,1,2), SUBSTRING(cid,4,LEN(cid)))
+ELSE cid
+END AS cid,
+CASE WHEN UPPER(TRIM(cntry)) IN ('USA','US','UNITED STATES') THEN 'United States'
+	 WHEN cntry='DE' THEN 'Germany'
+	 WHEN cntry='' or cntry IS NULL THEN 'n\a'
+	 ELSE cntry
+END AS cntry
+from bronze.erp_loc_a101
+--last 
+	INSERT INTO silver.erp_px_cat_g1v2(id,cat,subcat,maintenance)
+select 
+id,
+cat,
+subcat,
+maintenance
+from bronze.erp_px_cat_g1v2
  
